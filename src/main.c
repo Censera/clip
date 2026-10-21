@@ -5,7 +5,7 @@
 #	include	<stdbool.h>
 #	include	<err.h>
 
-#	include	"../inc/libclipboard.h"
+#	include	"../include/libclipboard.h"
 
 int	available_to_copy(const char *src)
 {
@@ -13,7 +13,7 @@ int	available_to_copy(const char *src)
 
 	if (pid < 0)
 	{
-		errx(1, "fork fails");
+		errx(1, "clip: fork fails");
 	}
 	else if (pid == 0)
 	{
@@ -22,11 +22,12 @@ int	available_to_copy(const char *src)
 		clipboard_c *cb = clipboard_new(NULL);
 		if (NULL == cb)
 		{
-			errx(1, "Failed to open clipboard!");
+			errx(1, "clip: failed to open clipboard!");
 		}
 
 		clipboard_set_text_ex(cb, src, -1, LCB_CLIPBOARD);
 
+		// Enough time for a clipboard to catch the text
 		sleep(10);
 
 		clipboard_free(cb);
@@ -47,14 +48,14 @@ int	main(int argc, char** argv)
 	else
 	{
 		if (isatty(STDIN_FILENO))
-			errx(1, "No input");
+			errx(1, "clip: no input");
 
 		size_t	cap = 4096;
 		size_t	bytes_read = 0;
 		char	*buf = malloc(cap);
 
 		if (buf == NULL)
-			errx(1, "Out of memory");
+			errx(1, "clip: out of memory");
 
 		while (1)
 		{
@@ -64,7 +65,7 @@ int	main(int argc, char** argv)
 			if (input == 0)
 			{
 				if (ferror(stdin))
-					errx(1, "Couldn't read");
+					errx(1, "clip: couldn't read");
 				break;
 			}
 
@@ -78,7 +79,7 @@ int	main(int argc, char** argv)
 				if (new_buf == NULL)
 				{
 					free(buf);
-					errx(1, "Out of memory while resizing");
+					errx(1, "clip: out of memory while resizing");
 				}
 
 				buf = new_buf;
